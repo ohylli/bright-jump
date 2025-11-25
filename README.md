@@ -12,7 +12,9 @@ A browser-based 3D platformer designed for visually impaired players, featuring 
 
 ## Play
 
-Open `index.html` in your browser and click to start.
+**[Play online](https://ohylli.github.io/bright-jump/)** - No download required!
+
+Or clone the repo and open `index.html` locally.
 
 **Controls:**
 | Key | Action |
