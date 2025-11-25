@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Platformer - Accessible Edition</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="ui">
+        <div id="score">Collectibles: <span id="collected">0</span> / <span id="total">0</span></div>
+        <div id="instructions">
+            <h2>Controls</h2>
+            <p>WASD or Arrow Keys: Move</p>
+            <p>Space: Jump</p>
+            <p>Click to start</p>
+        </div>
+        <div id="win-message" class="hidden">
+            <h2>You Win!</h2>
+            <p>All collectibles gathered!</p>
+            <p>Press R to restart</p>
+        </div>
+    </div>
+    <canvas id="game-canvas"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="audio.js"></script>
+    <script src="physics.js"></script>
+    <script src="player.js"></script>
+    <script src="world.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
