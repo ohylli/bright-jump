@@ -131,14 +131,6 @@ const World = {
             scene.add(wall);
             this.platforms.push(wall); // Add to platforms for collision
         });
-
-        // Floor to catch falls
-        const floorGeometry = new THREE.BoxGeometry(worldSize * 2, 2, worldSize * 2);
-        const floorMaterial = new THREE.MeshBasicMaterial({ color: 0x333333 });
-        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-        floor.position.set(0, -10, 0);
-        scene.add(floor);
-        this.platforms.push(floor);
     },
 
     update(time) {

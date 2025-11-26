@@ -103,6 +103,12 @@ const Game = {
         const isGrounded = Physics.checkGroundCollision(Player, World.platforms);
         Player.setGrounded(isGrounded);
 
+        // Check if player fell off the world
+        if (Player.mesh.position.y < -20) {
+            Player.reset();
+            AudioSystem.playFall();
+        }
+
         // Check collectible collisions
         const collected = Physics.checkCollectibles(Player, World.collectibles);
         collected.forEach(c => {

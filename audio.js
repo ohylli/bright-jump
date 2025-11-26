@@ -112,6 +112,30 @@ const AudioSystem = {
         osc.stop(time + duration);
     },
 
+    // Fall sound - descending tone for respawn
+    playFall() {
+        if (!this.initialized) return;
+
+        const ctx = this.context;
+        const time = ctx.currentTime;
+        const duration = 0.3;
+
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, time);
+        osc.frequency.exponentialRampToValueAtTime(100, time + duration);
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.3, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(time);
+        osc.stop(time + duration);
+    },
+
     // Collect sound - pleasant chime
     playCollect() {
         if (!this.initialized) return;
