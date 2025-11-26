@@ -54,6 +54,14 @@ const Game = {
         const instructions = document.getElementById('instructions');
         instructions.addEventListener('click', () => this.start());
 
+        // Start game on space key
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !this.started) {
+                e.preventDefault();
+                this.start();
+            }
+        });
+
         // Make Game globally accessible for restart
         window.Game = this;
 
