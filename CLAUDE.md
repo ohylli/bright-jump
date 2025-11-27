@@ -34,9 +34,16 @@ Open `index.html` in a browser. No server required for basic functionality, thou
 
 ### Color Palette
 - Player: Cyan (#00FFFF)
-- Platforms: Yellow (#FFFF00)
+- Platforms: Height-based coloring (Yellow < 5, Orange 5-10, Red ≥ 10)
 - Collectibles: Magenta (#FF00FF)
 - Boundaries: Orange (#FF8000)
+- Outlines/Stripes: White (#FFFFFF)
+
+### Visual Depth Cues
+- White outlines on all platforms and boundaries (EdgesGeometry)
+- Height-based platform colors (3 zones) for vertical orientation
+- Edge stripes on platform tops for distance/perspective cues
+- All using MeshBasicMaterial to preserve full brightness
 
 ### Architecture
 - Global objects (Game, Player, World, Physics, AudioSystem) for simplicity

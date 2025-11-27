@@ -6,9 +6,77 @@ const World = {
 
     // Color constants for high visibility
     colors: {
-        platform: 0xFFFF00,      // Bright yellow
+        platform: 0xFFFF00,      // Bright yellow (fallback)
+        platformLow: 0xFFFF00,   // Yellow (y < 5)
+        platformMid: 0xFFA500,   // Orange (5 <= y < 10)
+        platformHigh: 0xFF4444,  // Bright red (y >= 10)
         collectible: 0xFF00FF,   // Bright magenta
-        boundary: 0xFF8000       // Bright orange
+        boundary: 0xFF8000,      // Bright orange
+        outline: 0xFFFFFF,       // White
+        stripe: 0xFFFFFF         // White
+    },
+
+    // Get platform color based on height zone
+    getPlatformColor(y) {
+        if (y >= 10) return this.colors.platformHigh;
+        if (y >= 5) return this.colors.platformMid;
+        return this.colors.platformLow;
+    },
+
+    // Add edge stripes near platform borders
+    addEdgeStripes(group, w, h, d) {
+        const stripeMaterial = new THREE.MeshBasicMaterial({
+            color: this.colors.stripe
+        });
+        const stripeWidth = 0.2;
+        const stripeInset = 0.5;
+        const stripeHeight = h / 2 + 0.01;
+
+        const stripes = [
+            { pos: [0, stripeHeight, d/2 - stripeInset], size: [w - 1, 0.05, stripeWidth] },
+            { pos: [0, stripeHeight, -d/2 + stripeInset], size: [w - 1, 0.05, stripeWidth] },
+            { pos: [-w/2 + stripeInset, stripeHeight, 0], size: [stripeWidth, 0.05, d - 1] },
+            { pos: [w/2 - stripeInset, stripeHeight, 0], size: [stripeWidth, 0.05, d - 1] },
+        ];
+
+        stripes.forEach(s => {
+            const geo = new THREE.BoxGeometry(s.size[0], s.size[1], s.size[2]);
+            const stripe = new THREE.Mesh(geo, stripeMaterial);
+            stripe.position.set(s.pos[0], s.pos[1], s.pos[2]);
+            group.add(stripe);
+        });
+    },
+
+    // Create platform with outline and edge stripes
+    createPlatformMesh(scene, x, y, z, w, h, d) {
+        const group = new THREE.Group();
+
+        // Main platform with height-based color
+        const geometry = new THREE.BoxGeometry(w, h, d);
+        const material = new THREE.MeshBasicMaterial({
+            color: this.getPlatformColor(y)
+        });
+        const platform = new THREE.Mesh(geometry, material);
+        group.add(platform);
+
+        // White outline
+        const edges = new THREE.EdgesGeometry(geometry);
+        const lineMaterial = new THREE.LineBasicMaterial({
+            color: this.colors.outline
+        });
+        const outline = new THREE.LineSegments(edges, lineMaterial);
+        group.add(outline);
+
+        // Edge stripes on top
+        this.addEdgeStripes(group, w, h, d);
+
+        group.position.set(x, y, z);
+        scene.add(group);
+
+        // Store reference for cleanup
+        platform.parentGroup = group;
+
+        return platform;
     },
 
     init(scene) {
@@ -26,11 +94,7 @@ const World = {
 
     createStartPlatform(scene) {
         // Large starting platform
-        const geometry = new THREE.BoxGeometry(20, 2, 20);
-        const material = new THREE.MeshBasicMaterial({ color: this.colors.platform });
-        const platform = new THREE.Mesh(geometry, material);
-        platform.position.set(0, -1, 0);
-        scene.add(platform);
+        const platform = this.createPlatformMesh(scene, 0, -1, 0, 20, 2, 20);
         this.platforms.push(platform);
     },
 
@@ -73,11 +137,7 @@ const World = {
         ];
 
         platformData.forEach(p => {
-            const geometry = new THREE.BoxGeometry(p.w, p.h, p.d);
-            const material = new THREE.MeshBasicMaterial({ color: this.colors.platform });
-            const platform = new THREE.Mesh(geometry, material);
-            platform.position.set(p.x, p.y, p.z);
-            scene.add(platform);
+            const platform = this.createPlatformMesh(scene, p.x, p.y, p.z, p.w, p.h, p.d);
             this.platforms.push(platform);
 
             // Add collectible on most platforms
@@ -125,11 +185,24 @@ const World = {
         ];
 
         walls.forEach(w => {
+            const group = new THREE.Group();
+
             const geometry = new THREE.BoxGeometry(w.w, w.h, w.d);
             const wall = new THREE.Mesh(geometry, boundaryMaterial);
-            wall.position.set(w.x, w.y, w.z);
-            scene.add(wall);
-            this.platforms.push(wall); // Add to platforms for collision
+            group.add(wall);
+
+            // Add white outline
+            const edges = new THREE.EdgesGeometry(geometry);
+            const lineMaterial = new THREE.LineBasicMaterial({ color: this.colors.outline });
+            const outline = new THREE.LineSegments(edges, lineMaterial);
+            group.add(outline);
+
+            group.position.set(w.x, w.y, w.z);
+            scene.add(group);
+
+            // Store reference for cleanup and collision
+            wall.parentGroup = group;
+            this.platforms.push(wall);
         });
     },
 
@@ -156,8 +229,14 @@ const World = {
     },
 
     reset(scene) {
-        // Remove all objects from scene
-        this.platforms.forEach(p => scene.remove(p));
+        // Remove all objects from scene (groups contain platforms now)
+        this.platforms.forEach(p => {
+            if (p.parentGroup) {
+                scene.remove(p.parentGroup);
+            } else {
+                scene.remove(p);
+            }
+        });
         this.collectibles.forEach(c => scene.remove(c.mesh));
 
         // Reinitialize
